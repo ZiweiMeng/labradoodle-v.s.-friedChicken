@@ -7,11 +7,11 @@ Term: Spring 2017
 
 + Team #
 + Team members
-	+ Ziwei Meng (Presentor)
-	+ team member 2
-	+ team member 3
-	+ team member 4
-	+ team member 5
+	+ Ziwei Meng (Presenter)
+	+ Bowen Huang
+	+ Nanjun Wang
+	+ Jingru Xue
+	+ Chengcheng Yuan
 
 + Project summary: In this project, we created a classification engine for grayscale images of poodles versus images of fried chickens. 
 	
