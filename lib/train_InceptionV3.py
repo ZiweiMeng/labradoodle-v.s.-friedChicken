@@ -13,7 +13,7 @@ img_width = 299
 img_height = 299
 n_train_samples = 1200
 n_val_samples = 400
-n_epochs = 25
+n_epochs = 5
 batch_size = 32
 
 train_data_dir = '../../localData/prj3/training_data/train_split_3d/'
