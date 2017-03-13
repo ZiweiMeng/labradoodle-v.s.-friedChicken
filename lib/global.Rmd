@@ -1,0 +1,154 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#Step 0: specify directories.
+Set working directory to the image folder
+```{r}
+setwd("~/Desktop/Columbia/Spring 2017/ADS/Project 3")
+```
+set train and test data and provide directories for them:
+```{r}
+
+sift <- read.csv("../project 3/training_data/sift_features/sift_features.csv")
+sift <- t(sift)
+label <- read.csv("../Project 3/training_data/labels.csv")
+label$V1 <- as.numeric(label$V1)
+sift <- data.frame(cbind(label,sift))
+
+##creat train and test data
+set.seed(100)
+index <- 1:nrow(sift)
+test.index <- sample(index, length(index)*0.2)
+train <- sift[-test.index,]
+test <- sift[test.index,]
+img_dir <- "../training_dat/"
+train_dir <- paste(img_dir, "train/", sep = "")
+test_dir <- paste(img_dir, "test/", sep = "")
+```
+
+#Step1: set up controls for evaluation experiments
+In this chunk,we have a set of controls for the evaluation experiments.
+
+(T/F) cross-validation on the training set
+(number) K, the number of CV folds
+(T/F) process features for training set
+(T/F) run evaluation on an independent test set
+(T/F) run evaluation on an independent test set
+```{r}
+run.cv=TRUE # run cross-validation on the training set
+K <- 10  # number of CV folds
+run.feature.train=TRUE # process features for training set
+run.test=TRUE # run evaluation on an independent test set
+run.feature.test=TRUE # process features for test set
+```
+
+Using cross-validation or independent test set evaluation, we compare the performance of different classifiers or classifiers with different specifications. In this example, we use SVM with sift and deep convolutional neural netwroks with sift. In the following chunk, we list, in a vector, setups (in this case, sift) corresponding to models that we will compare. 
+```{r}
+model.values <- c("linear","radial")
+model.labels <- paste("SVM with", model.values,"kernel")
+```
+
+#Step 2: import training image class labels
+For our project, we code poodle picture as "0" and fried chicken as "1" for binary classification.
+```{r}
+train.label <- train[,1]
+test.label <- test[,1]
+```
+
+#Step 3: import sift features
+```{r}
+sift <- read.csv("../project 3/training_data/sift_features/sift_features.csv")
+sift <- t(sift)
+label <- read.csv("../Project 3/training_data/labels.csv")
+label$V1 <- as.numeric(label$V1)
+sift <- data.frame(cbind(label,sift))
+```
+
+#Step 4: train classification model with training images
+```{r}
+
+library(e1071)
+library(rpart)
+library(EBImage)
+
+
+##############Resize?
+
+```
+
+Train.R
+```{r}
+ker <- c("linear", "radial")
+train.f <- function(train.data, choice = 1){
+  library(e1071)
+  if (is.null(choice)){
+    kernel <- ker[1]
+  } else {
+    kernel <- ker[choice]
+  }
+  fit_svm <- svm(train.data[,-1], as.factor(train.data[,1]), data = train.data,
+                      cost = 10^c(-1:2), 
+                      gamma = c(0.5,1,2), 
+                      kernel = ker[choice],
+                      scale = F)
+  best_svm <- fit_svm$best.model
+  return(list(fit = fit_svm, best.model = best_svm))
+}
+```
+
+
+
+```{r}
+fit <- svm(train[,-1], as.factor(train[,1]), data = train,
+                cost = 10,
+                kernel = "linear",
+                scale = F)
+pred <- predict(fit, test[,-1])
+error <- sum(pred != test[,1])/length(test[,1])
+error
+train.time <- system.time(fit <- svm(train[,-1], as.factor(train[,1]), data = train,
+                cost = 10,
+                kernel = "linear",
+                scale = F) )
+pred.time <- system.time(pred <- predict(fit, test[,-1]))
+train.time[1]
+pred.time[1]
+```
+
+
+
+cross_validation.R
+```{r}
+cv.function <- function(X.train, y.train, c, K){
+  
+  library(e1071)
+  n <- length(y.train)
+  n.fold <- floor(n/K)
+  s <- sample(rep(1:K, c(rep(n.fold, K-1), n-(K-1)*n.fold)))  
+  cv.error <- rep(NA, K)
+  error <- data.frame(NA)
+  
+  for(i in 1:length(c)){
+    for (j in 1:K){
+      train.data <- X.train[s != j,]
+      train.label <- y.train[s != j]
+      test.data <- X.train[s == j,]
+      test.label <- y.train[s == j]
+    
+      fit <- svm(X.train, as.factor(y.train), data = cbind(X.train, y.train),
+               cost = c[i],
+               kernel = "linear",
+               scale = F)
+      
+      pred <- predict(fit, test.data)  
+      cv.error[j] <- mean(pred != test.label)  
+    }	
+    error[i,1] <- mean(cv.error)
+    error[i,2] <- sd(cv.error)
+  }
+  return(error)
+}
+cv.function(train[,-1], train[,1] ,c = c(100,200,1000), K = 5)
+```
