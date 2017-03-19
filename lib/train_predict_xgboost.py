@@ -37,3 +37,37 @@ def runXGB(train_X, train_y, test_X, test_y=None, feature_names=None, seed_val=0
     
     pred_test_y = model.predict(xgtest)
     return pred_test_y, model
+
+input_path = '../../localData/prj3/training_data/sift_features/sift_features.csv'
+
+total_df = pd.read_csv(input_path).transpose()
+
+labels = [1 for i in range(1000)] + [0 for i in range(1000)]
+total_df['label'] = labels
+
+total_df = utils.shuffle(total_df)
+
+train_test_ratio = 0.8
+n_total = total_df.shape[0]
+n_train = int(n_total*train_test_ratio)
+
+train_df = total_df.iloc[:n_train]
+test_df = total_df.iloc[n_train:]
+
+train_X = train_df.ix[:,:5000]
+train_y = train_df['label']
+
+test_X = test_df.ix[:,:5000]
+
+train_X = sparse.csr_matrix(train_X.values)
+test_X = sparse.csr_matrix(test_X.values)
+
+train_y = np.array(train_y)
+
+#xgtest = xgb.DMatrix(test_X)
+preds, _ = runXGB(train_X, train_y, test_X, num_rounds=400)
+#preds = model.predict(xgtest, ntree_limit=model.best_ntree_limit)
+out_df = pd.DataFrame(preds)
+out_df.columns = ["labradoodle","friedChicken"]
+out_df["image_id"] = test_df.index
+out_df.to_csv("../output/prediction_xgboost.csv", index=False)
