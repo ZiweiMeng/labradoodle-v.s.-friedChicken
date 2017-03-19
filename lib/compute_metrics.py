@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import log_loss
 
-pred_files = ['prediction_xgboost.csv','prediction_inceptionV3.csv']
+pred_files = ['prediction_xgboost.csv','prediction_inceptionV3.csv','prediction_xgboost_1000.csv']
 preds = ['../output/'+x for x in pred_files]
 
 def computeMetrics(pred_path):
