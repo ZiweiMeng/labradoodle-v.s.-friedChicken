@@ -31,4 +31,29 @@ sum(logResTest==class[test_index])/length(logResTest)
 
 
 
-# Improve the model by doing boostrap
+# Logsitical regression based on PCA
+
+sift_features_PCA<-read.csv("sift_features_1000.csv",header = TRUE)
+sift_features_PCA<-data.frame(t(sift_features_PCA))
+colnames(sift_features)<-seq(1,1000)
+sift_features_PCA$Class<-class
+test_data_PCA<-sift_features_PCA[test_index,]
+train_data_PCA<-sift_features_PCA[-test_index,]
+logisticRegression_PCA<-glm(Class~.,data=train_data_PCA,family = binomial(link='logit'))
+logResTrain_PCA<-ifelse(sign(predict(logisticRegression_PCA))>0,1,0)
+# Correct prediction rate for train data (PCA):
+sum(logResTrain_PCA==class[-test_index])/length(logResTrain_PCA)
+
+# Error  rate for train data (PCA):
+1-sum(logResTrain_PCA==class[-test_index])/length(logResTrain_PCA)
+
+# Prediction result for test data (PCA):
+logResTest_PCA<-ifelse(sign(predict(logisticRegression_PCA,test_data_PCA))>0,1,0)
+
+# Correct prediction rate for test data (PCA):
+sum(logResTest_PCA==class[test_index])/length(logResTest_PCA)
+
+# Error rate for test data (PCA):
+1-sum(logResTest_PCA==class[test_index])/length(logResTest_PCA)
+
+
