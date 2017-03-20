@@ -111,6 +111,16 @@ Prediction_LogisticRegression_cnn150$friedChicken<-1-Prediction_LogisticRegressi
 write.csv(Prediction_LogisticRegression_cnn150,file = "Prediction_LogisticRegression_cnn150.csv")
 
 
+# do feture selection for cnn150 logistic regression:
+if(!require("glmnet")) install.packages('glmnet')
+library("glmnet")
+
+logictRegression_cnn150_featureSelect<-cv.glmnet(as.matrix(train_data[,1:150]),train_data$Class,alpha = 1,family = "binomial",type.measure='auc')
+Prediction_LogisticRegression_cnn150_featureSelect<- predict(logictRegression_cnn150_featureSelect,newx  = as.matrix(test_data[,1:150]),type = "response",s='lambda.min')
+logResTest<-ifelse(Prediction_LogisticRegression_cnn150_featureSelect>0.5,1,0)
+sum(logResTest==class[test_index])/length(logResTest)
+
+
 
 
 
