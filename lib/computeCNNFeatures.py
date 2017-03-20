@@ -12,7 +12,7 @@ img_width = 299
 img_height = 299
 batch_size = 32
 n_samples = 2000
-n_augmentation = 5
+#n_augmentation = 5
 
 root_path = './'
 weights_path = os.path.join(root_path, '../../localData/prj3/weights.h5')
@@ -40,11 +40,13 @@ features = InceptionV3_model.predict_generator(data_generator, n_samples)
 end_train = time()
 
 features = pd.DataFrame(features).transpose()
+image_list = [x.split('/')[1] for x in image_list]
 features.columns = image_list
 features.to_csv('../data/cnn_features.csv',index=False)
 
 
 
 print('computing CNN features runs for %.4g s' % (end_train-start_train))
-
+# computing CNN features runs for 166.2 s
+# GPU is p2.x4large
 
