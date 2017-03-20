@@ -16,7 +16,7 @@ n_augmentation = 5
 labels = ['labradoodle', 'friedChicken']
 
 root_path = './'
-weights_path = os.path.join(root_path, 'weights.h5')
+weights_path = os.path.join(root_path, '../../localData/prj3/weights.h5')
 test_data_dir = os.path.join(root_path,'../../localData/prj3/training_data/test_split_3d/')
 
 # test data generator for prediction
