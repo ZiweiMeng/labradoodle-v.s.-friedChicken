@@ -38,7 +38,7 @@ In this chunk,we have a set of controls for the evaluation experiments.
 (T/F) run evaluation on an independent test set
 ```{r}
 run.cv=TRUE # run cross-validation on the training set
-K <- 10  # number of CV folds
+K <- 5  # number of CV folds
 run.feature.train=TRUE # process features for training set
 run.test=TRUE # run evaluation on an independent test set
 run.feature.test=TRUE # process features for test set
@@ -80,22 +80,17 @@ library(EBImage)
 
 Train.R
 ```{r}
-ker <- c("linear", "radial")
-train.f <- function(train.data, choice = 1){
+train <- function(dat_train, label_train, c=10){
+  
   library(e1071)
-  if (is.null(choice)){
-    kernel <- ker[1]
-  } else {
-    kernel <- ker[choice]
-  }
-  fit_svm <- svm(train.data[,-1], as.factor(train.data[,1]), data = train.data,
-                      cost = 10^c(-1:2), 
-                      gamma = c(0.5,1,2), 
-                      kernel = ker[choice],
-                      scale = F)
-  best_svm <- fit_svm$best.model
-  return(list(fit = fit_svm, best.model = best_svm))
+  fit_svm <- svm(dat_train, label_train, data = cbind(dat_train,label_train),
+             cost = c,
+             kernel = "linear",
+             scale = F)
+
+  return(fit_svm)
 }
+
 ```
 
 
@@ -117,7 +112,11 @@ train.time[1]
 pred.time[1]
 ```
 
-
+#Principle component analysis
+```{r}
+pca <- princomp(train[,-1])
+two_pca <- cbind(train[,1], pca$scores[,1:2])
+```
 
 cross_validation.R
 ```{r}
@@ -129,6 +128,7 @@ cv.function <- function(X.train, y.train, c, K){
   s <- sample(rep(1:K, c(rep(n.fold, K-1), n-(K-1)*n.fold)))  
   cv.error <- rep(NA, K)
   error <- data.frame(NA)
+  cost <- c
   
   for(i in 1:length(c)){
     for (j in 1:K){
@@ -145,10 +145,29 @@ cv.function <- function(X.train, y.train, c, K){
       pred <- predict(fit, test.data)  
       cv.error[j] <- mean(pred != test.label)  
     }	
-    error[i,1] <- mean(cv.error)
-    error[i,2] <- sd(cv.error)
+    error[i,1] <- c[i]
+    error[i,2] <- mean(cv.error)
+    error[i,3] <- sd(cv.error)
+  
   }
-  return(error)
+  return(list( error, best_cost = error[which.min(error[,2]),1]))
 }
-cv.function(train[,-1], train[,1] ,c = c(100,200,1000), K = 5)
+cv.result <- cv.function(train[,-1], train[,1] ,c = c(10, 10^2,10^3), K = 10)
+cv.result
+```
+
+#Asses the selected model
+test.R
+```{r}
+test <- function(fit_train, data_test){
+  pred <- predict(fit_train, data_test[,-1])
+  pred.er <- mean(pred != data_test[,1])
+  return(pred.er)
+}
+best_svm <- svm(train[,-1], as.factor(train[,1]), data = train,
+                cost = cv.result$best_cost,
+                scale = F)
+pred.test <- predict(best_svm, test[,-1])
+pred.error <- mean(pred.test != test[,1])
+pred.error
 ```
