@@ -121,6 +121,13 @@ logResTest<-ifelse(Prediction_LogisticRegression_cnn150_featureSelect>0.5,1,0)
 sum(logResTest==class[test_index])/length(logResTest)
 
 
+# Generate file cnn150_featureSelection
+Prediction_LogisticRegression_cnn150_featureSelect<-data.frame(Prediction_LogisticRegression_cnn150_featureSelect)
+colnames(Prediction_LogisticRegression_cnn150_featureSelect)<-"labradoodle"
+Prediction_LogisticRegression_cnn150_featureSelect$image<-rownames(Prediction_LogisticRegression_cnn150_featureSelect)
+Prediction_LogisticRegression_cnn150_featureSelect$friedChicken<-1-Prediction_LogisticRegression_cnn150_featureSelect$labradoodle
+write.csv(Prediction_LogisticRegression_cnn150_featureSelect,file = "Prediction_LogisticRegression_cnn150_featureSelect.csv")
+
 
 
 
