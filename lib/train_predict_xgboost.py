@@ -10,7 +10,7 @@ import xgboost as xgb
 from sklearn import model_selection, preprocessing, ensemble
 from sklearn.metrics import log_loss
 
-input_path = '../../localData/prj3/training_data/sift_features/sift_features_1000.csv'
+input_path = '../data/sift_features.csv'
 
 def runXGB(train_X, train_y, test_X, test_y=None, feature_names=None, seed_val=0, num_rounds=1000):
     param = {}
@@ -54,10 +54,11 @@ test_images = [x.split('.')[0] for x in test_images.tolist()]
 
 total_df = pd.read_csv(input_path).transpose()
 
-labels = [1 for i in range(1000)] + [0 for i in range(1000)]
+labels = [0 for i in range(1000)] + [1 for i in range(1000)]
 total_df['label'] = labels
 
 # for ensemble purpose make sure test set the same as in inceptionV3 model
+total_df.index = [x.split('.')[0] for x in total_df.index.tolist()]
 test_df = total_df.ix[total_df.index.isin(test_images)]
 train_df = total_df.ix[~total_df.index.isin(test_images)]
 '''
@@ -88,6 +89,6 @@ num_rounds=400)
 print('training time is:'+str(round(training_time,2))+'seconds;\npredicting time is:'+
 str(round(predicting_time,2))+'seconds.')
 out_df = pd.DataFrame(preds)
-out_df.columns = ["labradoodle","friedChicken"]
+out_df.columns = ["friedChicken","labradoodle"]
 out_df["image"] = test_df.index
-out_df.to_csv("../output/prediction_xgboost_1000.csv", index=False)
+out_df.to_csv("../output/prediction_xgboost_sift.csv", index=False)
