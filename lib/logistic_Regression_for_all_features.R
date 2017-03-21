@@ -39,9 +39,29 @@ Prediction_LogisticRegression_sift$image<-rownames(Prediction_LogisticRegression
 Prediction_LogisticRegression_sift$friedChicken<-1-Prediction_LogisticRegression_sift$labradoodle
 write.csv(Prediction_LogisticRegression_sift,file = "prediction_LogisticRegression_sift.csv")
 
+# do feture selection for sift 5000 logistic regression by LASSO, correct rate: 0.71:
+if(!require("glmnet")) install.packages('glmnet')
+library("glmnet")
+
+logictRegression_sift_featureSelect<-cv.glmnet(as.matrix(train_data[,1:5000]),train_data$Class,alpha = 1,family = "binomial",type.measure='auc')
+Prediction_LogisticRegression_sift_featureSelect<- predict(logictRegression_sift_featureSelect,newx  = as.matrix(test_data[,1:5000]),type = "response",s='lambda.min')
+logResTest<-ifelse(Prediction_LogisticRegression_sift_featureSelect>0.5,1,0)
+sum(logResTest==class[test_index])/length(logResTest)
+
+# Generate file sift_featureSelection
+Prediction_LogisticRegression_sift_featureSelect<-data.frame(Prediction_LogisticRegression_sift_featureSelect)
+colnames(Prediction_LogisticRegression_sift_featureSelect)<-"labradoodle"
+Prediction_LogisticRegression_sift_featureSelect$image<-rownames(Prediction_LogisticRegression_sift_featureSelect)
+Prediction_LogisticRegression_sift_featureSelect$friedChicken<-1-Prediction_LogisticRegression_sift_featureSelect$labradoodle
+write.csv(Prediction_LogisticRegression_sift_featureSelect,file = "prediction_LogisticRegression_sift_featureSelect.csv")
 
 
-# Logsitical regression based on PCA---Correct rate: 0.65
+
+
+
+
+
+# Logsitical regression based on PCA 1000---Correct rate: 0.65
 
 sift_features<-read.csv("sift_features_1000.csv",header = TRUE)
 sift_features<-data.frame(t(sift_features))
@@ -63,6 +83,26 @@ colnames(Prediction_LogisticRegression_sift1000)<-"labradoodle"
 Prediction_LogisticRegression_sift1000$image<-rownames(Prediction_LogisticRegression_sift1000)
 Prediction_LogisticRegression_sift1000$friedChicken<-1-Prediction_LogisticRegression_sift1000$labradoodle
 write.csv(Prediction_LogisticRegression_sift1000,file = "prediction_LogisticRegression_sift1000.csv")
+
+# do feture selection for sift1000 logistic regression by LASSO, correct rate: 0.7625:
+if(!require("glmnet")) install.packages('glmnet')
+library("glmnet")
+
+logictRegression_sift1000_featureSelect<-cv.glmnet(as.matrix(train_data[,1:1000]),train_data$Class,alpha = 1,family = "binomial",type.measure='auc')
+Prediction_LogisticRegression_sift1000_featureSelect<- predict(logictRegression_sift1000_featureSelect,newx  = as.matrix(test_data[,1:1000]),type = "response",s='lambda.min')
+logResTest<-ifelse(Prediction_LogisticRegression_sift1000_featureSelect>0.5,1,0)
+sum(logResTest==class[test_index])/length(logResTest)
+
+# Generate file sift_featureSelection
+Prediction_LogisticRegression_sift1000_featureSelect<-data.frame(Prediction_LogisticRegression_sift1000_featureSelect)
+colnames(Prediction_LogisticRegression_sift1000_featureSelect)<-"labradoodle"
+Prediction_LogisticRegression_sift1000_featureSelect$image<-rownames(Prediction_LogisticRegression_sift1000_featureSelect)
+Prediction_LogisticRegression_sift1000_featureSelect$friedChicken<-1-Prediction_LogisticRegression_sift1000_featureSelect$labradoodle
+write.csv(Prediction_LogisticRegression_sift1000_featureSelect,file = "prediction_LogisticRegression_sift1000_featureSelect.csv")
+
+
+
+
 
 
 # CNN model---Correction rate: 0.5425
@@ -86,6 +126,29 @@ colnames(Prediction_LogisticRegression_cnn)<-"labradoodle"
 Prediction_LogisticRegression_cnn$image<-rownames(Prediction_LogisticRegression_cnn)
 Prediction_LogisticRegression_cnn$friedChicken<-1-Prediction_LogisticRegression_cnn$labradoodle
 write.csv(Prediction_LogisticRegression_cnn,file = "prediction_LogisticRegression_cnn.csv")
+
+# do feture selection for cnn logistic regression by LASSO, correct rate: 0.95:
+if(!require("glmnet")) install.packages('glmnet')
+library("glmnet")
+
+logictRegression_cnn_featureSelect<-cv.glmnet(as.matrix(train_data[,1:2048]),train_data$Class,alpha = 1,family = "binomial",type.measure='auc')
+Prediction_LogisticRegression_cnn_featureSelect<- predict(logictRegression_cnn_featureSelect,newx  = as.matrix(test_data[,1:2048]),type = "response",s='lambda.min')
+logResTest<-ifelse(Prediction_LogisticRegression_cnn_featureSelect>0.5,1,0)
+sum(logResTest==class[test_index])/length(logResTest)
+
+# Generate file sift_featureSelection
+Prediction_LogisticRegression_cnn_featureSelect<-data.frame(Prediction_LogisticRegression_cnn_featureSelect)
+colnames(Prediction_LogisticRegression_cnn_featureSelect)<-"labradoodle"
+Prediction_LogisticRegression_cnn_featureSelect$image<-rownames(Prediction_LogisticRegression_cnn_featureSelect)
+Prediction_LogisticRegression_cnn_featureSelect$friedChicken<-1-Prediction_LogisticRegression_cnn_featureSelect$labradoodle
+write.csv(Prediction_LogisticRegression_cnn_featureSelect,file = "prediction_LogisticRegression_cnn_featureSelect.csv")
+
+
+
+
+
+
+
 
 
 # CNN model 150 feature---Correstion Rate:0.9075:
@@ -114,7 +177,7 @@ Prediction_LogisticRegression_cnn150$friedChicken<-1-Prediction_LogisticRegressi
 write.csv(Prediction_LogisticRegression_cnn150,file = "prediction_LogisticRegression_cnn150.csv")
 
 
-# do feture selection for cnn150 logistic regression:
+# do feture selection for cnn150 logistic regression by LASSO, correct rate: 0.955:
 if(!require("glmnet")) install.packages('glmnet')
 library("glmnet")
 
