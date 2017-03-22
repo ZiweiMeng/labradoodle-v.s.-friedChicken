@@ -26,10 +26,10 @@ logisticRegression_adv<-function(fpath){
   # Separete trainning data and test data from orignial data set:
   train_data<-sift_features[-test_index,]
   test_data<-sift_features[test_index,]
-  
+  n<-dim(train_data)[2]-1
   # start trainning logistic regression model:
-  logictRegression_cnn150_featureSelect<-cv.glmnet(as.matrix(train_data[,1:150]),train_data$Class,alpha = 1,family = "binomial",type.measure='auc')
+  logictRegression_cnn_featureSelect<-cv.glmnet(as.matrix(train_data[,1:n]),train_data$Class,alpha = 1,family = "binomial",type.measure='auc')
   
-  return(logictRegression_cnn150_featureSelect)
+  return(logictRegression_cnn_featureSelect)
 }
 
