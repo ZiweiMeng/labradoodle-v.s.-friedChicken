@@ -37,7 +37,7 @@ Prediction_LogisticRegression_sift<-data.frame(Prediction_LogisticRegression_sif
 colnames(Prediction_LogisticRegression_sift)<-"labradoodle"
 Prediction_LogisticRegression_sift$image<-rownames(Prediction_LogisticRegression_sift)
 Prediction_LogisticRegression_sift$friedChicken<-1-Prediction_LogisticRegression_sift$labradoodle
-<<<<<<< Updated upstream
+
 write.csv(Prediction_LogisticRegression_sift,file = "prediction_LogisticRegression_sift.csv")
 
 # do feture selection for sift 5000 logistic regression by LASSO, correct rate: 0.71:
@@ -63,13 +63,13 @@ write.csv(Prediction_LogisticRegression_sift_featureSelect,file = "prediction_Lo
 
 
 # Logsitical regression based on PCA 1000---Correct rate: 0.65
-=======
+
 write.csv(Prediction_LogisticRegression_sift,file = "Prediction_LogisticRegression_sift.csv")
 
 
 
 # Logsitical regression based on PCA---Correct rate: 0.65
->>>>>>> Stashed changes
+
 
 sift_features<-read.csv("sift_features_1000.csv",header = TRUE)
 sift_features<-data.frame(t(sift_features))
@@ -77,7 +77,7 @@ sift_features$Class<-class
 test_data<-sift_features[test_index,]
 train_data<-sift_features[-test_index,]
 logisticRegression_PCA<-glm(Class~.,data=train_data,family = "binomial")
-<<<<<<< Updated upstream
+
 
 # Prediction result for test data
 Prediction_LogisticRegression_sift1000<-predict(logisticRegression_PCA,test_data,type = "response")
@@ -112,7 +112,6 @@ write.csv(Prediction_LogisticRegression_sift1000_featureSelect,file = "predictio
 
 
 
-=======
 
 # Prediction result for test data
 Prediction_LogisticRegression_sift1000<-predict(logisticRegression_PCA,test_data,type = "response")
@@ -127,7 +126,7 @@ colnames(Prediction_LogisticRegression_sift1000)<-"labradoodle"
 Prediction_LogisticRegression_sift1000$image<-rownames(Prediction_LogisticRegression_sift1000)
 Prediction_LogisticRegression_sift1000$friedChicken<-1-Prediction_LogisticRegression_sift1000$labradoodle
 write.csv(Prediction_LogisticRegression_sift1000,file = "Prediction_LogisticRegression_sift1000.csv")
->>>>>>> Stashed changes
+
 
 
 # CNN model---Correction rate: 0.5425
@@ -143,7 +142,7 @@ Prediction_LogisticRegression_cnn<-predict(logisticRegression_PCA,test_data,type
 
 # Correct prediction rate for test data:
 logResTest<-ifelse(Prediction_LogisticRegression_cnn>0.5,1,0)
-<<<<<<< Updated upstream
+
 sum(logResTest==class[test_index])/length(logResTest)
 
 # Generate file
@@ -222,7 +221,7 @@ write.csv(Prediction_LogisticRegression_cnn150_featureSelect,file = "prediction_
 
 
 
-=======
+
 sum(logResTest==class[test_index])/length(logResTest)
 
 # Generate file
