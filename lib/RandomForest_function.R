@@ -20,9 +20,10 @@ rf_adv <- function(fpath){
   #Cross Validation
   model_rfcv <- rfcv(train_data[, 1:(n-1)], as.factor(train_data[, n]), cv.fold=5)
   with(model_rfcv, plot(n.var, error.cv, log="x", type="o", lwd=2))
+  para_cv <- as.numeric(names(which.min(model_rfcv$error.cv)))
   
   #Random Forest model
-  system.time(model.rf <- randomForest(train_data[, 1:(n-1)], as.factor(train_data[, n]),mtry=19))
+  system.time(model.rf <- randomForest(train_data[, 1:(n-1)], as.factor(train_data[, n]),mtry=para_cv))
   return(model.rf)
 }
 
