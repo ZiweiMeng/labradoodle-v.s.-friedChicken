@@ -161,10 +161,7 @@ train_data<-sift_features[-test_index,]
 test_data<-sift_features[test_index,]
 
 # Tarin Model
-start=Sys.time()
 logistic.fit <- glm(Class ~ ., data = train_data, family = "binomial")
-end=Sys.time()
-end-start
 Prediction_LogisticRegression_cnn150 <- predict(logistic.fit,newdata = test_data,type = 'response')
 logResTest<-ifelse(Prediction_LogisticRegression_cnn150>0.5,1,0)
 sum(logResTest==class[test_index])/length(logResTest)
