@@ -37,6 +37,7 @@ Prediction_LogisticRegression_sift<-data.frame(Prediction_LogisticRegression_sif
 colnames(Prediction_LogisticRegression_sift)<-"labradoodle"
 Prediction_LogisticRegression_sift$image<-rownames(Prediction_LogisticRegression_sift)
 Prediction_LogisticRegression_sift$friedChicken<-1-Prediction_LogisticRegression_sift$labradoodle
+
 write.csv(Prediction_LogisticRegression_sift,file = "prediction_LogisticRegression_sift.csv")
 
 # do feture selection for sift 5000 logistic regression by LASSO, correct rate: 0.71:
@@ -63,12 +64,20 @@ write.csv(Prediction_LogisticRegression_sift_featureSelect,file = "prediction_Lo
 
 # Logsitical regression based on PCA 1000---Correct rate: 0.65
 
+write.csv(Prediction_LogisticRegression_sift,file = "Prediction_LogisticRegression_sift.csv")
+
+
+
+# Logsitical regression based on PCA---Correct rate: 0.65
+
+
 sift_features<-read.csv("sift_features_1000.csv",header = TRUE)
 sift_features<-data.frame(t(sift_features))
 sift_features$Class<-class
 test_data<-sift_features[test_index,]
 train_data<-sift_features[-test_index,]
 logisticRegression_PCA<-glm(Class~.,data=train_data,family = "binomial")
+
 
 # Prediction result for test data
 Prediction_LogisticRegression_sift1000<-predict(logisticRegression_PCA,test_data,type = "response")
@@ -104,6 +113,21 @@ write.csv(Prediction_LogisticRegression_sift1000_featureSelect,file = "predictio
 
 
 
+# Prediction result for test data
+Prediction_LogisticRegression_sift1000<-predict(logisticRegression_PCA,test_data,type = "response")
+
+# Correct prediction rate for test data:
+logResTest<-ifelse(Prediction_LogisticRegression_sift1000>0.5,1,0)
+sum(logResTest==class[test_index])/length(logResTest)
+
+# Generate file
+Prediction_LogisticRegression_sift1000<-data.frame(Prediction_LogisticRegression_sift1000)
+colnames(Prediction_LogisticRegression_sift1000)<-"labradoodle"
+Prediction_LogisticRegression_sift1000$image<-rownames(Prediction_LogisticRegression_sift1000)
+Prediction_LogisticRegression_sift1000$friedChicken<-1-Prediction_LogisticRegression_sift1000$labradoodle
+write.csv(Prediction_LogisticRegression_sift1000,file = "Prediction_LogisticRegression_sift1000.csv")
+
+
 
 # CNN model---Correction rate: 0.5425
 sift_features<-read.csv("cnn_features.csv",header = TRUE)
@@ -118,6 +142,7 @@ Prediction_LogisticRegression_cnn<-predict(logisticRegression_PCA,test_data,type
 
 # Correct prediction rate for test data:
 logResTest<-ifelse(Prediction_LogisticRegression_cnn>0.5,1,0)
+
 sum(logResTest==class[test_index])/length(logResTest)
 
 # Generate file
@@ -161,10 +186,7 @@ train_data<-sift_features[-test_index,]
 test_data<-sift_features[test_index,]
 
 # Tarin Model
-start=Sys.time()
 logistic.fit <- glm(Class ~ ., data = train_data, family = "binomial")
-end=Sys.time()
-end-start
 Prediction_LogisticRegression_cnn150 <- predict(logistic.fit,newdata = test_data,type = 'response')
 logResTest<-ifelse(Prediction_LogisticRegression_cnn150>0.5,1,0)
 sum(logResTest==class[test_index])/length(logResTest)
@@ -193,6 +215,41 @@ colnames(Prediction_LogisticRegression_cnn150_featureSelect)<-"labradoodle"
 Prediction_LogisticRegression_cnn150_featureSelect$image<-rownames(Prediction_LogisticRegression_cnn150_featureSelect)
 Prediction_LogisticRegression_cnn150_featureSelect$friedChicken<-1-Prediction_LogisticRegression_cnn150_featureSelect$labradoodle
 write.csv(Prediction_LogisticRegression_cnn150_featureSelect,file = "prediction_LogisticRegression_cnn150_featureSelect.csv")
+
+
+
+
+sum(logResTest==class[test_index])/length(logResTest)
+
+# Generate file
+Prediction_LogisticRegression_cnn<-data.frame(Prediction_LogisticRegression_cnn)
+colnames(Prediction_LogisticRegression_cnn)<-"labradoodle"
+Prediction_LogisticRegression_cnn$image<-rownames(Prediction_LogisticRegression_cnn)
+Prediction_LogisticRegression_cnn$friedChicken<-1-Prediction_LogisticRegression_cnn$labradoodle
+write.csv(Prediction_LogisticRegression_cnn,file = "Prediction_LogisticRegression_cnn.csv")
+
+
+# CNN model 150 feature---Correstion Rate:0.9075:
+sift_features<-read.csv("cnn_features_150.csv",header = TRUE)
+sift_features<-data.frame(t(sift_features))
+sift_features$Class<-factor(class)
+
+# Separete trainning data and test data from orignial data set
+train_data<-sift_features[-test_index,]
+test_data<-sift_features[test_index,]
+
+# Tarin Model
+logistic.fit <- glm(Class ~ ., data = train_data, family = "binomial")
+Prediction_LogisticRegression_cnn150 <- predict(logistic.fit,newdata = test_data,type = 'response')
+logResTest<-ifelse(Prediction_LogisticRegression_cnn150>0.5,1,0)
+sum(logResTest==class[test_index])/length(logResTest)
+
+# Generate file
+Prediction_LogisticRegression_cnn150<-data.frame(Prediction_LogisticRegression_cnn150)
+colnames(Prediction_LogisticRegression_cnn150)<-"labradoodle"
+Prediction_LogisticRegression_cnn150$image<-rownames(Prediction_LogisticRegression_cnn150)
+Prediction_LogisticRegression_cnn150$friedChicken<-1-Prediction_LogisticRegression_cnn150$labradoodle
+write.csv(Prediction_LogisticRegression_cnn150,file = "Prediction_LogisticRegression_cnn150.csv")
 
 
 
