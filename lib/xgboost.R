@@ -21,13 +21,13 @@ runXGB<-function(train_X_path, train_Y_path, max.depth = 100, eta = 1,
   train_label<- as.numeric(train_set$label)
   dtrain <- xgb.DMatrix(data = train_data, label = train_label)
   
-  bstSparse <- xgb.train(eval,data = dtrain, max.depth = max.depth, eta = eta, 
+  bstSparse <- xgb.train(data = dtrain, max.depth = max.depth, eta = eta, 
                          nthread = nthread, nround = nround, objective = objective)
   return(bstSparse)
 }
 
 ## The part below is used for test the function, not included in the function
-features <- read.csv("cnn_features_350.csv", header = TRUE, as.is=TRUE)
+features <- read.csv("sift_features_1100.csv", header = TRUE, as.is=TRUE)
 labels <- read.csv("labels.csv", header = TRUE, as.is=TRUE)
 test_v3 <- read.csv("prediction_inceptionV3.csv", header = TRUE, as.is=TRUE)
 features <- t(features)
@@ -41,18 +41,18 @@ dataset$image <- rownames(dataset)
 test_data <- dataset %>% filter(dataset$image %in% test_v3$image)
 n_col<-ncol(test_data)
 test_label<-test_data[,n_col-1]
-test_data<-test_data[,1:(n_col-2)]
-test_data<-as.matrix(test_data)
+test_data1<-test_data[,1:(n_col-2)]
+test_data1<-as.matrix(test_data1)
 ### Start running the training function
 t1<-Sys.time()
-xgb_fit<-runXGB(train_X_path = "cnn_features_350.csv",train_Y_path = "labels.csv")
+xgb_fit<-runXGB(train_X_path = "sift_features_1100.csv",train_Y_path = "labels.csv")
 t2<-Sys.time()
 ### End running the training function
 
 
 ### Start predicting
 t3<-Sys.time()
-pred<-predict(xgb_fit,test_data)>0.5
+pred<-predict(xgb_fit,test_data1)>0.5
 t4<-Sys.time()
 ### End training 
 
@@ -66,4 +66,8 @@ accuracy
 train_time
 pred_time
 
+friedChicken<-predict(xgb_fit,test_data1,n.trees=100,type="response")
+labradoodle<-1-friedChicken
+prediction_csv<-cbind(image=test_data[,n+1],friedChicken=friedChicken,labradoodle=labradoodle)
+write.csv(prediction_csv,file="prediction_xgb_sift_1100.csv",row.names = FALSE)
 
