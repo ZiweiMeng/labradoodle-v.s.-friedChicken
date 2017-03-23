@@ -10,13 +10,13 @@ import xgboost as xgb
 from sklearn import model_selection, preprocessing, ensemble
 from sklearn.metrics import log_loss
 
-input_path = '../data/sift_features.csv'
+input_path = '../data/cnn_features_350.csv'
 
 def runXGB(train_X, train_y, test_X, test_y=None, feature_names=None, seed_val=0, num_rounds=1000):
     param = {}
     param['objective'] = 'multi:softprob'
-    param['eta'] = 0.1
-    param['max_depth'] = 6
+    param['eta'] = 0.003
+    param['max_depth'] = 5
     param['silent'] = 1
     param['num_class'] = 2
     param['eval_metric'] = "logloss"
@@ -91,4 +91,4 @@ str(round(predicting_time,2))+'seconds.')
 out_df = pd.DataFrame(preds)
 out_df.columns = ["friedChicken","labradoodle"]
 out_df["image"] = test_df.index
-out_df.to_csv("../output/prediction_xgboost_sift.csv", index=False)
+out_df.to_csv("../output/prediction_xgboost_cnn350.csv", index=False)

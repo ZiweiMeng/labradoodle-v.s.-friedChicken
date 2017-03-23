@@ -1,0 +1,137 @@
+---
+title: "Model Selection"
+output: 
+    html_notebook:
+      theme: journal
+      toc: TRUE
+---
+
+### Step 0: specify directories.
+Set up the directories.
+```{r}
+#setwd('/Users/Zoe/documents/spring2017/gr5243/MyPrjs/spr2017-proj3-group3/')
+setwd('./')
+baseline_train_features <- 'data/sift_features.csv'
+advanced_train_features <- 'data/cnn_features_350.csv'
+train_labels <- 'data/labels.csv'
+test_img_dir <- 'data/new_images/'
+test_sift_features <- 'data/test_sift_features.csv'
+orig_test_cnn_features <- 'data/orig_test_cnn_features.csv'
+test_cnn_features <- 'data/test_cnn_features.csv'
+```
+
+### Step 1: set up controls for evaluation experiments.
+* (T/F) cross-validation on the training set
+* (number) K, the number of CV folds
+* (T/F) process features for training set
+* (T/F) run evaluation on an independent test set
+* (T/F) run evaluation on an independent test set
+```{r}
+run.cv=TRUE # run cross-validation on the training set
+K <- 5  # number of CV folds
+run.feature.train=FALSE # process features for training set
+run.evaluation=TRUE #if true, split training set into training and test sets, use cv and grid search to tune hyperparamers on training set and evaluate models on test set.
+run.test=TRUE # run evaluation on an independent test set
+run.feature.test=TRUE # process features for test set
+```
+
+### Step 2: construct visual features
+Here we extract features from a CNN network.
+We use Python to process it so make sure you have following python packages installed with python2.7:
+<pre>
+$pip install keras==1.2.1
+$pip install numpy
+$pip install pandas
+</pre>
+You can either in command line run 
+<pre>$python lib/computeCNNFeatures.py </pre>
+or run the following code block.
+```{r}
+library(rPython)
+tm_feature_train <- NA
+if(run.feature.train){
+  tm_feature_train <- system.time(python.load("lib/computeCNNFeatures.py"))
+}
+```
+After this step you should be able to access cnn features stored in 'data/cnn_features.csv'.
+
+### Step 3: Train baseline model
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(gbm)
+library(data.table)
+
+source('train.R')
+
+n.features <- 5000
+tm_baseline_train <- NA
+tm_baseline_train <- system.time(gbm_fit <- train_bl(baseline_train_features,run.evaluation,n.features,K,run.cv))
+save(gbm_fit,file='output/baselineModel.RData')
+```
+
+### Step 4: Train advanced models
+Since we use ensemble model as our best model, here we train svm, xgboost, randomforest, logistic regression and later on ensemble them for prediction.
+```{r}
+n.features <- 350
+tm_advanced_train <- NA
+
+tm_advanced_train1 <- system.time(svm_fit <- svm_adv(advanced_train_features,n.features,run.cv))
+save(svm_fit,file = 'output/svmModel.RData')
+
+# tm_advanced_train2 <- system.time(rf_fit <- rf_adv(advanced_train_features,k,run.cv))
+# save(rf_fit,'output/rfModel.RData')
+```
+
+### Step 5: Make prediction
+If run.evaluation is true, make prediction on separated training set(not used in training process), if run.test is true, make prediction on the new test set.
+```{r}
+source('test.R')
+# load trained models
+load('output/baselineModel.RData')
+load('output/svmModel.RData')
+n.bl.features <- 5000
+n.adv.features <- 350
+
+if(run.feature.test){
+  # compute cnn features for test data
+  # use pca to get 350 out out 2048 features
+  tm_select_features <- system.time(selectFeatures(orig_test_cnn_features,test_cnn_features))
+}
+
+if(run.evaluation){
+  # process and split test data
+  base.test.data <- split.train(baseline_train_features)
+  adv.test.data <- split.train(advanced_train_features)
+  # use test.R to make prediction with gbm_fit
+  tm_bl_pred <- NA
+  tm_bl_pred <- system.time(base.test.pred <- test(gbm_fit,base.test.data,n.bl.features))
+  # or with best.fits(several models) and ensemble their results
+  tm_adv_pred <- NA
+  tm_adv_pred <- system.time(adv.test.pred <- test(svm_fit,adv.test.data,n.adv.features))
+  # give evaluation(accuracy)
+  acc.bl <- sum(base.test.pred==base.test.data$label)/dim(base.test.data)[1]
+  acc.adv <- sum(adv.test.pred==adv.test.data$label)/dim(adv.test.data)[1]
+  cat('baseline model accuracy is',acc.bl,'\nadvanced model accuracy is',acc.adv)
+}
+if(run.test){
+  # process test data
+  base.test.data <- process.test(test_sift_features)
+  adv.test.data <- process.test(test_cnn_features)
+  # use test.R to make prediction with gbm_fit
+  tm_bl_pred <- NA
+  tm_bl_pred <- system.time(base.test.pred <- test(gbm_fit,base.test.data,n.bl.features))
+  # or with best.fits(several models) and ensemble their results
+  tm_adv_pred <- NA
+  tm_adv_pred <- system.time(adv.test.pred <- test(svm_fit,adv.test.data,n.adv.features))
+  # save the pred results into 2 csv
+  
+}
+
+# summarize training time for baseline and advanced models
+# summarize test time for feature-preprocess, baseline and advanced models
+```
+
+
+
+
+

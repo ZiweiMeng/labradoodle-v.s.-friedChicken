@@ -1,0 +1,55 @@
+---
+title: "Presentation"
+output: 
+    html_notebook:
+      theme: journal
+      toc: TRUE
+---
+## Introduction
+
+## Analysis
+
+### Step 0: Better features
+Let's plot the first two principal components of sift features against cnn features.
+```{r echo=FALSE}
+library(data.table)
+library(ggplot2)
+source('../lib/multiplot.R')
+
+sift.feature <- fread('../data/sift_features_1100.csv')
+cnn.feature <- fread('../data/cnn_features_350.csv')
+sift.feature <- data.frame(t(sift.feature))
+cnn.feature <- data.frame(t(cnn.feature))
+sift.feature$label <- c(rep('fried chicken',1000),rep('labradoodle',1000))
+cnn.feature$label <- c(rep('fried chicken',1000),rep('labradoodle',1000))
+p1 <- ggplot(cnn.feature, aes(x=X2, y=X3, color=label))+
+  xlab('pc1')+
+  ylab('pc2') +
+  geom_point(alpha=0.7) +
+  coord_fixed(ratio = 1) +
+  ggtitle('CNN Features')
+p2 <- ggplot(sift.feature, aes(x=X1, y=X2, color=label))+
+  xlab('pc1')+
+  ylab('pc2') +
+  geom_point(alpha=0.7) +
+  coord_fixed(ratio = 1) +
+  ggtitle('SIFT Features')
+multiplot(p2,p1,cols=2)
+  
+```
+
+
+### Step 1: Better models
+```{r}
+# plot accuracy increase and time decrease from baseline models to advanced models
+# explain why ensemble is more influential in baseline models than in advanced models(compare features, bias-dominated v.s. variance-dominated)
+```
+
+
+### Step 2: Best Ensemble!
+```{r}
+# plot heatmap of correlation between advanced models
+```
+
+
+## Summary
