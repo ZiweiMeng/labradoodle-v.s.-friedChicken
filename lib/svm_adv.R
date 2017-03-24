@@ -6,8 +6,6 @@
 ### Project 3
 ### ADS Spring 2017
 cv.function <- function(X.train, y.train, c, K){
-  
-  library(e1071)
   n <- length(y.train)
   n.fold <- floor(n/K)
   s <- sample(rep(1:K, c(rep(n.fold, K-1), n-(K-1)*n.fold)))  
@@ -48,7 +46,7 @@ train.fn <- function(dat_train, label_train, c=1000){
   ### Output: training model specification
   
   ### load libraries
-  library(e1071)
+  #library(e1071)
   
   ### Train with svm model
   fit_svm <- svm(dat_train, as.factor(label_train), data = cbind(dat_train, label_train),
@@ -66,8 +64,8 @@ svm_adv <- function(file_dir,k,run.cv){
   # k: number of features
   
   ###load libraries    
-  library(dplyr)
-  library(e1071)
+  #library(dplyr)
+  #library(e1071)
   #library(data.table)
   
   ###read feature files
@@ -79,13 +77,14 @@ svm_adv <- function(file_dir,k,run.cv){
   dataset <- data.frame(t(dataset))
   #dataset <- cbind(label,dataset)
   dataset$label <- label$V1
-  file_rowname <- rownames(dataset)
-  value <- "jpg"
-  if(grepl(value, file_rowname[1])){
-    dataset$image <- rownames(dataset)
-  } else{
-    dataset$image <- paste(rownames(dataset),".jpg", sep = "")
-  }
+  #file_rowname <- rownames(dataset)
+  dataset$image <- rownames(dataset)
+  # value <- "jpg"
+  # if(grepl(value, file_rowname[1])){
+  #   dataset$image <- rownames(dataset)
+  # } else{
+  #   dataset$image <- paste(rownames(dataset),".jpg", sep = "")
+  # }
   
   ###set test and train data 
   

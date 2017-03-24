@@ -17,10 +17,10 @@ train_bl <- function(fpath,run.evaluation,k=5000,K=5,run.cv=FALSE){
   if(run.evaluation){
     # separate training and test data sets
     
-    library(stringi)
+    #library(stringi)
     test_imgs <- fread('output/prediction_inceptionV3.csv')
     test_imgs <- test_imgs$image
-    test_imgs <- lapply(test_imgs,function(x) stri_sub(x,1,-5))
+    #test_imgs <- lapply(test_imgs,function(x) stri_sub(x,1,-5))
     
     #testD <- bl_df[bl_df$image%in%test_imgs,]
     trainD <- bl_df[!(bl_df$image%in%test_imgs),]
