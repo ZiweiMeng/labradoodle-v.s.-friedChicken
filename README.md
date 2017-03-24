@@ -14,10 +14,12 @@ Term: Spring 2017
 	+ Chengcheng Yuan
 
 + Project summary: In this project, we created a classification engine for grayscale images of poodles versus images of fried chickens. 
-+ Test set prediction result:
+
++ Test set prediction result
         + together: output/labels.csv
         + output/advance_test_pred.csv
         + output/baseline_test_pred.csv
+	
 + Test CNN features:
         + output/test_cnn_features.csv (2000*350)
 	
