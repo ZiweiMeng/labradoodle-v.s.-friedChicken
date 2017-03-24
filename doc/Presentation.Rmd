@@ -6,18 +6,40 @@ output:
       toc: TRUE
 ---
 ## Introduction
+Our goal is to classfiy whether an image is labradoodle or fried chicken.
+Our basedline is SIFT features + gradient boosting model, and we first consider gradient boosting model with a set of different features, then we consider same SIFT features with a set of different models, finally we combine the best feature from step1 and evaluate models on it, we also do ensemble to boost the accuracy.
+For evaluation purpose we split training set into training and test sets, use cross-validation to tune hyperparameters and evaluate them on the test set.
+Ideally the best model should have highest accuracy with acceptable training time.
 
 ## Analysis
 
-### Step 0: Better features
+### Step 1: Better features
+Besides default SIFT features, we use a pre-trained InceptionV3 CNN model to extract features, we call it CNN feature, and then we do PCA on both SIFT feature and CNN feature to reduce the dimension and save time. To maintain approximately 90% variation in training set, we transform 5000-dim SITF feature to 1100-dim and 2048-dim CNN feature to 350-dim.
+Besides GBM we also use logistic regression, random forest and support vector machine, so we have 4 sets of features,
+
+* SIFT
+* SIFT 1100
+* CNN
+* CNN350
+
+and 4 models,
+
+* GBM
+* Random Forest
+* Logistic Regression
+* SVM
+
+together we run 4x4=16 combinations, however SIFT1100 features uniformly have lower accuracy than orginal SIFT features while training time is much longer than CNN350, and CNN350 features have almost as same good result as original CNN features while training time is much lower. Hence we stick to original SIFT features and CNN350 features for model selection.
+
 Let's plot the first two principal components of sift features against cnn features.
-```{r echo=FALSE}
+```{r echo=FALSE, fig.width = 10, fig.height = 6}
 library(data.table)
 library(ggplot2)
+library(reshape2)
 source('../lib/multiplot.R')
 
-sift.feature <- fread('../data/sift_features_1100.csv')
-cnn.feature <- fread('../data/cnn_features_350.csv')
+sift.feature <- fread('../output/sift_features_1100.csv')
+cnn.feature <- fread('../output/cnn_features_350.csv')
 sift.feature <- data.frame(t(sift.feature))
 cnn.feature <- data.frame(t(cnn.feature))
 sift.feature$label <- c(rep('fried chicken',1000),rep('labradoodle',1000))
@@ -37,19 +59,106 @@ p2 <- ggplot(sift.feature, aes(x=X1, y=X2, color=label))+
 multiplot(p2,p1,cols=2)
   
 ```
+A convolutional neural network does nothing more than transforming the image into a higher linearly-separatable space and you can clearly see the pattern here. So just by plotting the features we can expect SVM and logistic regression to have better results. Let's verify it.
 
+### Step 2: Better models
+Here we compare performance metrics among 3 groups.
 
-### Step 1: Better models
-```{r}
+* First group is GBM model with SIFT and CNN350 features.
+* Second group is SIFT feature with GBM, Logistic Regression, SVM and Random Forest models.
+* Third group is CNN350 feature with GBM, Logistic Regression, SVM and Random Forest models.
+
+Let's take a look at how they perform.
+```{r echo=FALSE, fig.width = 10, fig.height = 6}
 # plot accuracy increase and time decrease from baseline models to advanced models
+model_eva <- fread('../output/model_evaluation.csv')
+better.feature.index <- c(2,3,4,5)
+better.model.index <- c(2,9,13,17)
+better.both.index <- c(4,6,10,14)
+better.feature <- model_eva[better.feature.index,]
+better.model <- model_eva[better.model.index,]
+better.both <- model_eva[better.both.index,]
+p1 <- ggplot(better.feature,aes(x=feature_type)) + 
+  geom_line(aes(y = accuracy*100, colour='Accuracy'),group=1) +
+  geom_line(aes(y=(train_time+1642)*30/719,colour='training time'),group=1,linetype=2) +
+  scale_y_continuous(sec.axis = sec_axis(~.*(719/30)-1642, name = "Training Time [s]")) + 
+  labs(y = "Accuracy [%]",
+                x = "Feature Type",
+                colour = "Metrics") + 
+  ggtitle('GBM with different features')
+p2 <- ggplot(better.model,aes(x=model)) +  
+  geom_line(aes(y = accuracy*100, colour='Accuracy'),group=1) +
+  geom_line(aes(y=(train_time+7484)*10/1089,colour='training time'),group=1,linetype=2) +
+  scale_y_continuous(sec.axis = sec_axis(~.*(1089/10)-7484, name = "Training Time [s]")) + 
+  labs(y = "Accuracy [%]",
+                x = "Model Type",
+                colour = "Metrics") +
+  #geom_line(aes(model, accuracy), data=better.model,group=1) +
+  ggtitle('SIFT feature with different models')
+p3 <- ggplot(better.both,aes(x=model)) +
+  geom_line(aes(y = accuracy*100, colour='Accuracy'),group=1) +
+  geom_line(aes(y=(train_time+298)*7/25,colour='training time'),group=1,linetype=2) +
+  scale_y_continuous(sec.axis = sec_axis(~.*(25/7)-298, name = "Training Time [s]")) + 
+  labs(y = "Accuracy [%]",
+                x = "Model Type",
+                colour = "Metrics") +
+  #geom_line(aes(model, accuracy), data=better.both,group=1) +
+  ggtitle('CNN 350 feature with different models')
+multiplot(p1,p2,p3)
 # explain why ensemble is more influential in baseline models than in advanced models(compare features, bias-dominated v.s. variance-dominated)
 ```
 
 
-### Step 2: Best Ensemble!
-```{r}
+### Step 3: Best Ensemble!
+From above analysis, if I have to choose a single model I would vote for logistic regression. However, SVM also does a good job and we're considering ensemble them to lower generalized error due to variance.
+```{r echo=FALSE, fig.width = 10, fig.height = 6}
 # plot heatmap of correlation between advanced models
+model.preds <- fread('../output/model_preds.csv')
+bl_models <- model.preds[,c(1,3,5,7)]
+adv_models <- model.preds[,c(2,4,6,8)]
+cor_bl <- cor(bl_models)
+cor_adv <- cor(adv_models)
+p1 <- ggplot(data = melt(cor_bl), aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile() +
+  #theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size=12, hjust = 1), axis.text.y = element_text(size = 12),plot.title = element_text(size=18))+
+  coord_fixed(ratio = 1) +
+  ggtitle('Baseline\'s correlation')
+p2 <- ggplot(data = melt(cor_adv), aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12 ,hjust = 1), axis.text.y = element_text(size = 12),plot.title = element_text(size=18))+
+  coord_fixed(ratio = 1) +
+  ggtitle('Advanced\'s correlation')
+multiplot(p1,p2,cols=2)
+# plot accuracy of each ensemble pair (6 in total)
+ensemble_list <- c('gbm.lr','gbm.svm','gbm.rf','lr.svm','lr.rf','svm.rf')
+ensemble_acc <- data.frame(setNames(replicate(6,numeric(1), simplify = F), ensemble_list))
+class(adv_models) <- 'data.frame'
+ensemble_index <- list(c(1,2),c(1,3),c(1,4),c(2,3),c(2,4),c(3,4))
+for(i in 1:length(ensemble_index)){
+  pair <- adv_models[,ensemble_index[[i]]]
+  ensemble_acc[,i] <- (sum((rowMeans(pair)>0.5)==model.preds$ground_truth)/400)
+}
+ensemble_cor <- c(0.8927,0.8865,0.9462,0.9864,0.8870,0.8807)
+single_max <- c(0.9525,0.9525,0.9,0.9525,0.9525,0.9525)
+ensemble <- data.frame(mod=colnames(ensemble_acc),acc=as.numeric(ensemble_acc[1,]),single.max=single_max,corr=ensemble_cor)
+p <- ggplot(ensemble,aes(x=mod)) +
+  geom_line(aes(y = acc*100, colour='Accuracy'),group=1) +
+  geom_line(aes(y=single.max*100, colour='Single model accuracy'),group=1,linetype=2) +
+  geom_line(aes(y=(corr+0.92)*50,colour='Correlation'),group=1,linetype=2) +
+  scale_y_continuous(sec.axis = sec_axis(~.*0.02-0.92, name = "Correlation")) + 
+  labs(y = "Accuracy [%]",
+                x = "Model Type",
+                colour = "Metrics") +
+  theme(axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15),plot.title = element_text(size=22),legend.text=element_text(size=15))+
+  #geom_line(aes(model, accuracy), data=better.both,group=1) +
+  ggtitle('Ensemble model pairs')
+p
 ```
-
+After ensembling each pair of models, you can see than pairs with similar accuracy, GBM+Random Forest and Logistic Regression+SVM give a boost in accuracy, but pairs with pretty different accuracy is no better than a single model. The correlation between SVM and Logistic Regression is pretty high, which is not quite diresable, but since CNN feature is almost linearly-separatable we still consider them to be better choice for generalization.
 
 ## Summary
+For trade-off between accuracy and time cost, we finally choose CNN350 feature with an ensemble of Logistic Regression and SVM models to be our advanced model, which gives a 95.5% accuracy on our evalution test set.
+See more details in <a href='https://github.com/TZstatsADS/spr2017-proj3-group3/blob/master/main.Rmd'>main.RMD</a> if you want to reproduce the result.
+
+

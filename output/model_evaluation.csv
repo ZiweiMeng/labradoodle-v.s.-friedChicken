@@ -1,0 +1,18 @@
+model,feature_type,feature_num,train_time,predict_time,accuracy
+cnn,NA,NA,355,45,0.99
+gbm,sift5000,5000,754.812,9.194,0.74
+gbm,sift1100,1100,141.378,0.249,0.7275
+gbm,cnn350,350,36.102,0.04,0.895
+gbm,cnn2048,2048,231.97,0.941,0.9075
+logistic regression,cnn350,350,20.26,0.009,0.9525
+logistic regression,cnn2048,2048,36.215,0.023,0.95
+logistic regression,sift1100,1100,35.215,0.017,0.7575
+logistic regression,sift5000,5000,139.04,0.053,0.71
+svm,cnn350,350,44.485,0.209,0.9525
+svm,cnn2048,2048,111.16,0.485,0.96
+svm,sift1100,1100,288.475,0.735,0.735
+svm,sift5000,5000,1227.606,3.874,0.79
+random forest,cnn350,350,31.41,0.048,0.9
+random forest,cnn2048,2048,342.01,0.157,0.9225
+random forest,sift1100,1100,120.98,0.098,0.6725
+random forest,sift5000,5000,373.5,0.329,0.71

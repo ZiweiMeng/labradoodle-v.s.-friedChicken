@@ -11,13 +11,14 @@ split.train <- function(fpath){
   dataset <- fread(fpath)
   dataset <- data.frame(t(dataset))
   dataset$label <- label$V1
-  file_rowname <- rownames(dataset)
-  value <- "jpg"
-  if(grepl(value, file_rowname[1])){
-    dataset$image <- rownames(dataset)
-  } else{
-    dataset$image <- paste(rownames(dataset),".jpg", sep = "")
-  }
+  #file_rowname <- rownames(dataset)
+  dataset$image <- rownames(dataset)
+  #value <- "jpg"
+  #if(grepl(value, file_rowname[1])){
+  #  dataset$image <- rownames(dataset)
+  #} else{
+  #  dataset$image <- paste(rownames(dataset),".jpg", sep = "")
+  #}
   test_data <- dataset %>% filter(dataset$image %in% test_ids$image)
   
   return(test_data)
@@ -52,9 +53,10 @@ test = function(fit_train, dat_test,k){
                 
                 # xgb.Booster = predict(fit_train, 
                 #                       newdata = dat_test)
-                svm = attr(predict(fit_train, dat_test[,1:k], probability = T),'probabilities')[,2]
+                svm = attr(predict(fit_train, dat_test[,1:k], probability = T),'probabilities')[,2],
+                cv.glmnet = predict(fit_train,newx = as.matrix(dat_test[,1:k]),type='response',s='lambda.min')
   )
   
   
-  return(as.numeric(pred> 0.5))
+  return(pred)
 }

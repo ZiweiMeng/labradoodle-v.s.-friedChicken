@@ -8,16 +8,20 @@ output:
 
 ### Step 0: specify directories.
 Set up the directories.
+Please download <a href='https://s3.amazonaws.com/doodle-vs-friedchicken/weights.h5?response-content-disposition=attachment&X-Amz-Security-Token=FQoDYXdzEMP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDInt1%2FOFL7l4oIlkYSKqAhd7fEJvgSgdSMeC0oHkoCjchGkAJBp%2FnPBm5TLvYOOB0TXO6rGeJk2nj9ajwd6a%2ByiOjS6XtvoaxGaFJ5Or7uVm%2B3yt8s4U1dkA8Jusnec%2Fpgaj5aeALciZmYm3YUJgsMjiUix7qJYDca%2BoJ9V6p8c1Y7AUuS67GNjqcTWn3yShAPZDIrYAur3ckzbqDD4bRJDA0bYb6328m83OL7%2BchsSsnlf2jJa45lbI62HihEX4J9cdmYPFpbe5gmfecZVflEHs5isExqirSkMfosylfYX2jcffBQFfO2rLzPxmtgwe1sqa2KgSKf8y51uUMOykbXWIJ5HoRpxiT3QZnbErU8pGadHzQ%2B8BEduTssrNP62bv2nYnB5LZRzoQrrYm247wYOF1Q0xbqStYlIojbTVxgU%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20170324T180139Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAIBBWLEAO7FIOALAA%2F20170324%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=b01bc4bf4ae3b00f97c089ee2142a725f7fe8b929b0a83ddebbdec8e5ccc272d'>weights.h5</a> and put it in the output folder.
 ```{r}
 #setwd('/Users/Zoe/documents/spring2017/gr5243/MyPrjs/spr2017-proj3-group3/')
 setwd('./')
+#train_img_dir <- 'data/raw_images/'
 baseline_train_features <- 'data/sift_features.csv'
-advanced_train_features <- 'data/cnn_features_350.csv'
+advanced_train_orig_features <- 'output/cnn_features.csv'
+advanced_train_features <- 'output/cnn_features_350.csv'
 train_labels <- 'data/labels.csv'
-test_img_dir <- 'data/new_images/'
+test_img_dir <- 'data/test/'
 test_sift_features <- 'data/test_sift_features.csv'
-orig_test_cnn_features <- 'data/orig_test_cnn_features.csv'
-test_cnn_features <- 'data/test_cnn_features.csv'
+orig_test_cnn_features <- 'output/orig_test_cnn_features.csv'
+test_cnn_features <- 'output/test_cnn_features.csv'
+weights_url <- 'https://s3.amazonaws.com/doodle-vs-friedchicken/weights.h5?response-content-disposition=attachment&X-Amz-Security-Token=FQoDYXdzEMP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDInt1%2FOFL7l4oIlkYSKqAhd7fEJvgSgdSMeC0oHkoCjchGkAJBp%2FnPBm5TLvYOOB0TXO6rGeJk2nj9ajwd6a%2ByiOjS6XtvoaxGaFJ5Or7uVm%2B3yt8s4U1dkA8Jusnec%2Fpgaj5aeALciZmYm3YUJgsMjiUix7qJYDca%2BoJ9V6p8c1Y7AUuS67GNjqcTWn3yShAPZDIrYAur3ckzbqDD4bRJDA0bYb6328m83OL7%2BchsSsnlf2jJa45lbI62HihEX4J9cdmYPFpbe5gmfecZVflEHs5isExqirSkMfosylfYX2jcffBQFfO2rLzPxmtgwe1sqa2KgSKf8y51uUMOykbXWIJ5HoRpxiT3QZnbErU8pGadHzQ%2B8BEduTssrNP62bv2nYnB5LZRzoQrrYm247wYOF1Q0xbqStYlIojbTVxgU%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20170324T180139Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAIBBWLEAO7FIOALAA%2F20170324%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=b01bc4bf4ae3b00f97c089ee2142a725f7fe8b929b0a83ddebbdec8e5ccc272d'
 ```
 
 ### Step 1: set up controls for evaluation experiments.
@@ -43,20 +47,22 @@ $pip install keras==1.2.1
 $pip install numpy
 $pip install pandas
 </pre>
-You can either in command line run 
-<pre>$python lib/computeCNNFeatures.py </pre>
-or run the following code block.
+I recomment you to to lib directory in command line run 
+<pre>$python computeCNNFeatures.py ../data/raw_images/ ../output/cnn_features.csv</pre>
 ```{r}
-library(rPython)
-tm_feature_train <- NA
+source('train.R')
 if(run.feature.train){
-  tm_feature_train <- system.time(python.load("lib/computeCNNFeatures.py"))
+  cat('Have you run computeCNNFeatures.py?')
+  tm_select_features_train <- system.time(pca_model <-selectFeatures(advanced_train_orig_features,advanced_train_features,run.feature.train=run.feature.train,run.feature.test = F))
+  save(pca_model,file = 'output/pcaModel.RData')
+  #save(pca_model[[2]],file = 'index.RData')
 }
+
 ```
-After this step you should be able to access cnn features stored in 'data/cnn_features.csv'.
+After this step you should be able to access reduced cnn features stored in 'output/cnn_features_350.csv'.
 
 ### Step 3: Train baseline model
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(dplyr)
 library(gbm)
 library(data.table)
@@ -72,14 +78,19 @@ save(gbm_fit,file='output/baselineModel.RData')
 ### Step 4: Train advanced models
 Since we use ensemble model as our best model, here we train svm, xgboost, randomforest, logistic regression and later on ensemble them for prediction.
 ```{r}
+library("glmnet")
+library(e1071)
+
 n.features <- 350
 tm_advanced_train <- NA
 
 tm_advanced_train1 <- system.time(svm_fit <- svm_adv(advanced_train_features,n.features,run.cv))
 save(svm_fit,file = 'output/svmModel.RData')
 
-# tm_advanced_train2 <- system.time(rf_fit <- rf_adv(advanced_train_features,k,run.cv))
-# save(rf_fit,'output/rfModel.RData')
+tm_advanced_train2 <- system.time(lr_fit <- lr_adv(advanced_train_features,n.features,run.cv))
+save(lr_fit,file = 'output/lrModel.RData')
+
+tm_advanced_train <- tm_advanced_train1 + tm_advanced_train2
 ```
 
 ### Step 5: Make prediction
@@ -89,13 +100,20 @@ source('test.R')
 # load trained models
 load('output/baselineModel.RData')
 load('output/svmModel.RData')
+load('output/lrModel.RData')
+load('output/pcaModel.RData')
+#load('output/index.RData')
 n.bl.features <- 5000
 n.adv.features <- 350
 
 if(run.feature.test){
   # compute cnn features for test data
   # use pca to get 350 out out 2048 features
-  tm_select_features <- system.time(selectFeatures(orig_test_cnn_features,test_cnn_features))
+  pca.mod <- pca_model[[1]]
+  train.sd <- pca_model[[2]]
+  
+  tm_select_features <- system.time(selectFeatures(orig_test_cnn_features,test_cnn_features,run.feature.test=run.feature.test,run.feature.train = F,train.sd = train.sd,prin_comp = pca.mod))
+  
 }
 
 if(run.evaluation){
@@ -107,10 +125,14 @@ if(run.evaluation){
   tm_bl_pred <- system.time(base.test.pred <- test(gbm_fit,base.test.data,n.bl.features))
   # or with best.fits(several models) and ensemble their results
   tm_adv_pred <- NA
-  tm_adv_pred <- system.time(adv.test.pred <- test(svm_fit,adv.test.data,n.adv.features))
+  # tm_adv_pred <- system.time(adv.test.pred <- test(svm_fit,adv.test.data,n.adv.features))
+  tm_adv_pred1 <- system.time(adv.test.pred1 <- test(svm_fit,adv.test.data,n.adv.features))
+  tm_adv_pred2 <- system.time(adv.test.pred2 <- test(lr_fit,adv.test.data,n.adv.features))
+  tm_adv_pred <- tm_adv_pred1 + tm_adv_pred2
+  adv.test.pred <- (adv.test.pred1+adv.test.pred2)/2
   # give evaluation(accuracy)
-  acc.bl <- sum(base.test.pred==base.test.data$label)/dim(base.test.data)[1]
-  acc.adv <- sum(adv.test.pred==adv.test.data$label)/dim(adv.test.data)[1]
+  acc.bl <- sum((base.test.pred>0.5)==base.test.data$label)/dim(base.test.data)[1]
+  acc.adv <- sum((adv.test.pred>0.5)==adv.test.data$label)/dim(adv.test.data)[1]
   cat('baseline model accuracy is',acc.bl,'\nadvanced model accuracy is',acc.adv)
 }
 if(run.test){
@@ -122,9 +144,24 @@ if(run.test){
   tm_bl_pred <- system.time(base.test.pred <- test(gbm_fit,base.test.data,n.bl.features))
   # or with best.fits(several models) and ensemble their results
   tm_adv_pred <- NA
-  tm_adv_pred <- system.time(adv.test.pred <- test(svm_fit,adv.test.data,n.adv.features))
+  tm_adv_pred1 <- system.time(adv.test.pred1 <- test(svm_fit,adv.test.data,n.adv.features))
+  tm_adv_pred2 <- system.time(adv.test.pred2 <- test(lr_fit,adv.test.data,n.adv.features))
+  tm_adv_pred <- tm_adv_pred1 + tm_adv_pred2
+  adv.test.pred <- (adv.test.pred1+adv.test.pred2)/2
   # save the pred results into 2 csv
-  
+  result.bl <- as.integer(base.test.pred>0.5)
+  result.adv <- as.integer(adv.test.pred>0.5)
+  save.pred <- function(pred,images,output_name){
+    output <- data.frame(predict_label=as.numeric(pred>0.5))
+    output$image <- images
+    output$labradoodle <- pred
+    output$friedChicken <- 1-pred
+    fwrite(output,file=output_name)
+  } 
+  save.pred(base.test.pred,base.test.data$image,'output/baseline_test_pred.csv')
+  save.pred(adv.test.pred,adv.test.data$image,'output/advance_test_pred.csv')
+  cat('baseline model prediction for test set is(0 for fried chicken, 1 for labradoodle) ', result.bl)
+  cat('advanced model prediction for test set is(0 for fried chicken, 1 for labradoodle) ', result.adv)
 }
 
 # summarize training time for baseline and advanced models
