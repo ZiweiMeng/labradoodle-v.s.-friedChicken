@@ -15,10 +15,11 @@ Term: Spring 2017
 
 + Project summary: In this project, we created a classification engine for grayscale images of poodles versus images of fried chickens. 
 + Test set prediction result:
- * output/advance_test_pred.csv
- * output/baseline_test_pred.csv
+        + together: output/labels.csv
+        + output/advance_test_pred.csv
+        + output/baseline_test_pred.csv
 + Test CNN features:
- * output/test_cnn_features.csv (2000*350)
+        + output/test_cnn_features.csv (2000*350)
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
