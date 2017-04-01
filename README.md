@@ -13,7 +13,7 @@ Term: Spring 2017
 	+ Jingru Xue
 	+ Chengcheng Yuan
 
-+ Project summary: In this project, we created a classification engine for images of poodles versus images of fried chicken in black and white thus focusing on texture instead of color. We added CNN features extracted from pre-trained Inception V3 network which decrease our test error by a lot. At the same time, we tested several classifiers on our data: GBM, SVM, Random Forest and Logistic Regression. Among these models, Logistic Regression and SVM yielded the most accurate results. We ensembled them to get the final model.
++ Project summary: In this project, we created a classification engine for images of poodles versus images of fried chicken in black and white thus focusing on texture instead of color. We added CNN features extracted from pre-trained Inception V3 network which decrease our test error by a lot. At the same time, we tested several classifiers on our data: GBM, SVM, Random Forest and Logistic Regression. Among these models, Logistic Regression and SVM yielded the most accurate results. We ensembled them to get the final model, reached a 95.5% accuracy compared to 72.4% accuracy of baseline model.
 
 **Contribution statement**:<br/>
 Ziwei tuned the baseline model, was responsible for the extraction of the CNN features, formatted the main code according to the guidelines and organized the presentation.<br/>
